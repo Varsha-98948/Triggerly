@@ -1,5 +1,5 @@
-
 import { useEffect, useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import { supabase } from './supabase'
 
 function App() {
@@ -43,22 +43,27 @@ function App() {
   }
 
   const createAutomation = async () => {
-    if (!automationName) return
+  if (!automationName) return
 
-    const { error } = await supabase.from('automations').insert([
-      {
-        user_id: session.user.id,
-        name: automationName,
-        trigger_type: 'webhook',
-        action_type: 'telegram',
-      },
-    ])
+  const webhookToken = uuidv4()
+    .replace(/-/g, '')
+    .slice(0, 12)
 
-    if (!error) {
-      setAutomationName('')
-      fetchAutomations(session)
-    }
+  const { error } = await supabase.from('automations').insert([
+    {
+      user_id: session.user.id,
+      name: automationName,
+      trigger_type: 'webhook',
+      action_type: 'telegram',
+      webhook_token: webhookToken,
+    },
+  ])
+
+  if (!error) {
+    setAutomationName('')
+    fetchAutomations(session)
   }
+}
 
   const signUp = async () => {
     const { error } = await supabase.auth.signUp({
@@ -163,6 +168,12 @@ function App() {
                       <span className="text-white ml-2">
                         {automation.action_type}
                       </span>
+                    </p>
+                    <p>
+                     Webhook:
+                     <span className="text-green-400 ml-2 break-all">
+                      http://localhost:8000/webhook/{automation.webhook_token}
+                     </span>
                     </p>
                   </div>
                 </div>
