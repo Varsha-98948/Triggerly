@@ -6,6 +6,11 @@ from services.automation_service import (
 
 from services.execution_service import (
     create_execution_log,
+    update_execution_status,
+)
+
+from services.action_service import (
+    execute_action,
 )
 
 router = APIRouter()
@@ -29,13 +34,34 @@ async def receive_webhook(
             detail="Automation not found",
         )
 
-    create_execution_log(
+    execution_log = create_execution_log(
         automation["id"],
         payload,
         "received",
     )
 
+    try:
+        result = execute_action(
+            automation,
+            payload,
+        )
+
+        update_execution_status(
+            execution_log["id"],
+            "completed",
+        )
+
+    except Exception as e:
+        update_execution_status(
+            execution_log["id"],
+            "failed",
+            str(e),
+        )
+
+        raise
+
     return {
         "success": True,
         "automation_id": automation["id"],
+        "action_result": result,
     }
