@@ -47,7 +47,7 @@ function App() {
 
   const webhookToken = uuidv4()
     .replace(/-/g, '')
-    .slice(0, 12)
+    .slice(0, 16)
 
   const { error } = await supabase.from('automations').insert([
     {
