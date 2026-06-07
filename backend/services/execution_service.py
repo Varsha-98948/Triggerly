@@ -36,4 +36,4 @@ def update_execution_status(
         )
         .eq("id", execution_log_id)
         .execute()
-    )
+    )   
